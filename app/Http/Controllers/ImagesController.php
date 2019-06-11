@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Images;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
@@ -18,7 +19,8 @@ class ImagesController extends Controller
     public function index()
     {
         //
-        return 'Get Method';
+//        dd(Images::first()->user()->get('name'));
+        return Images::all();
     }
 
     /**
@@ -29,6 +31,7 @@ class ImagesController extends Controller
     public function create()
     {
         //
+        return view('images_create');
     }
 
     /**
@@ -39,16 +42,20 @@ class ImagesController extends Controller
      */
     public function store(Request $request)
     {
-//        dd($request);
-//        Get FileName
-//        dd($request->file('image')->getClientOriginalName());
-        dd($request->validate([
-
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
-
-        ]));
-        $path = Storage::putFile('images', $request->file('image'));
-        return $path;
+        $path = Storage::putFile('images', $request->file('fileUpload'));
+        $request = $request->file('fileUpload');
+//        dd($request->validate([
+//
+//            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
+//        ]));
+        Images::create([
+            'name' => $request->getClientOriginalName(),
+            'size' => $request->getSize(),
+            'type' => $request->getMimeType(),
+            'user_id' => auth()->id(),
+            'path' => $path,
+        ]);
+        return redirect('/images');
     }
 
     /**
