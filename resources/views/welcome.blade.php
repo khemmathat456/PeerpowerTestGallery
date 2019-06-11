@@ -96,7 +96,6 @@
             </div>
         </div>
         <div>
-            <img src="{{ url('storage/images/aoxGJqLXmWiGsmzwBMxhM2L1z8vybnmfJnMj8dud.jpeg')}}">
         </div>
     </body>
 </html>

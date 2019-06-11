@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Images;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -20,7 +21,11 @@ class ImagesController extends Controller
     {
         //
 //        dd(Images::first()->user()->get('name'));
-        return Images::all();
+//        return Images::all();
+        $images = Images::all()->where('user_id',auth()->id());
+        $user = User::all()->where('id',auth()->id())[0];
+        $counter = $images->countBy('type');
+        return view('images_index', ['images'=>$images, 'counter'=>$counter, 'data_used'=>$user->data_used]);
     }
 
     /**
@@ -42,12 +47,11 @@ class ImagesController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'fileUpload' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
+        ]);
         $path = Storage::putFile('images', $request->file('fileUpload'));
         $request = $request->file('fileUpload');
-//        dd($request->validate([
-//
-//            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
-//        ]));
         Images::create([
             'name' => $request->getClientOriginalName(),
             'size' => $request->getSize(),
@@ -55,6 +59,9 @@ class ImagesController extends Controller
             'user_id' => auth()->id(),
             'path' => $path,
         ]);
+        // Repo
+        $user = User::all()->where('id',auth()->id())->first();
+        $user->update(['data_used'=>$user->data_used+$request->getSize()]);
         return redirect('/images');
     }
 
