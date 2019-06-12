@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Images;
-use App\User;
+use App\Models\Images;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -19,9 +19,6 @@ class ImagesController extends Controller
      */
     public function index()
     {
-        //
-//        dd(Images::first()->user()->get('name'));
-//        return Images::all();
         $images = Images::all()->where('user_id',auth()->id());
         $user = User::all()->where('id',auth()->id())[0];
         $counter = $images->countBy('type');
@@ -48,20 +45,26 @@ class ImagesController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'fileUpload' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
+            'fileUpload' => 'required',
+            'fileUpload.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
         ]);
-        $path = Storage::putFile('images', $request->file('fileUpload'));
+
         $request = $request->file('fileUpload');
-        Images::create([
-            'name' => $request->getClientOriginalName(),
-            'size' => $request->getSize(),
-            'type' => $request->getMimeType(),
-            'user_id' => auth()->id(),
-            'path' => $path,
-        ]);
+        foreach ($request as $image) {
+            $path = Storage::disk('public')->putFile('images', $image);
+            Images::create([
+                'name' => $image->getClientOriginalName(),
+                'name_unique' => basename($path),
+                'size' => $image->getSize(),
+                'type' => $image->getMimeType(),
+                'user_id' => auth()->id(),
+                'path' => $path,
+            ]);
         // Repo
         $user = User::all()->where('id',auth()->id())->first();
-        $user->update(['data_used'=>$user->data_used+$request->getSize()]);
+        $user->update(['data_used'=>$user->data_used+$image->getSize()]);
+        }
+
         return redirect('/images');
     }
 
@@ -73,7 +76,7 @@ class ImagesController extends Controller
      */
     public function show(Images $photoModel, $id)
     {
-        $path = storage_path('app/images/' . $id);
+        $path = storage_path('app/public/images/' . $id);
         $file = File::get($path);
         $type = File::mimeType($path);
 
@@ -86,32 +89,30 @@ class ImagesController extends Controller
      *
      * @param  \App\Images  $photoModel
      * @return \Illuminate\Http\Response
-     */
     public function edit(Images $photoModel)
     {
         //
     }
 
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Images  $photoModel
      * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Images $photoModel)
     {
         //
     }
 
-    /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Images  $photoModel
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Images $photoModel)
+    public function destroy(Images $photoModel,$id)
     {
-        //
+        Storage::disk('public')->delete('images/'.$id);
+        $photoModel->where('name_unique', $id)->delete();
+        return redirect('images');
     }
 }
