@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>File Upload Manager</title>
-    <link rel="stylesheet" href="css/app.css" charset="utf-8">
-</head>
-<body>
+@extends('layouts.app')
+
+@section('content')
+    <div class = "container">
+
     <h1>Data used: {{ $data_used }}</h1>
     <h3>Type used:
         @foreach($counter as $type => $count)
@@ -13,7 +10,6 @@
         @endforeach
     </h3>
     @foreach ($images as $image)
-        <div class = "container">
             <form action="{{ route('images.destroy', [$image->name_unique]) }}" enctype="multipart/form-data" method="post">
                 {{ method_field('DELETE') }}
                 {{ csrf_field() }}
@@ -22,8 +18,7 @@
                 </div>
             </form>
             <p>This is {{ $image->name }}</p>
-        </div>
         <img src="{{ url($image->path)}}">
+    </div>
     @endforeach
-</body>
-</html>
+@endsection

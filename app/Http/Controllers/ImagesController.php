@@ -32,8 +32,8 @@ class ImagesController extends Controller
      */
     public function create()
     {
-        //
-        return view('images_create');
+//        return view('images_create');
+        return view('upload');
     }
 
     /**
@@ -44,14 +44,13 @@ class ImagesController extends Controller
      */
     public function store(Request $request)
     {
+//        dd($request->file('fileUpload'));
         $request->validate([
-            'fileUpload' => 'required',
-            'fileUpload.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
+            'fileUpload' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
         ]);
 
-        $request = $request->file('fileUpload');
-        foreach ($request as $image) {
-            $path = Storage::disk('public')->putFile('images', $image);
+        $image = $request->file('fileUpload');
+//        $path = Storage::disk('public')->putFile('images', $image);
             Images::create([
                 'name' => $image->getClientOriginalName(),
                 'name_unique' => basename($path),
@@ -60,12 +59,13 @@ class ImagesController extends Controller
                 'user_id' => auth()->id(),
                 'path' => $path,
             ]);
-        // Repo
+//         Repo
         $user = User::all()->where('id',auth()->id())->first();
         $user->update(['data_used'=>$user->data_used+$image->getSize()]);
-        }
+//        }
+        return $path;
 
-        return redirect('/images');
+//        return redirect('/images');
     }
 
     /**

@@ -17,6 +17,9 @@
                     You are logged in!
                 </div>
             </div>
+
+            <example-component></example-component>
+            <test-component>Hi this is from slot</test-component>
         </div>
     </div>
 </div>
