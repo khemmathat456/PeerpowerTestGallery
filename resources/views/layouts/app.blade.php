@@ -23,7 +23,7 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
+                <a class="navbar-brand" style="color: rgba(0, 0, 0, 0.5);" href="{{ url('/') }}">
 {{--                    {{ config('app.name', 'Laravel') }}--}}
                     Simple Image Gallery
                 </a>
@@ -34,25 +34,16 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
-                        @guest
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
+                        @auth
                             <li class="nav-item dropdown">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('images.index') }}">{{ __('Home') }}</a>
+                                    <a class="nav-link" href="/">{{ __('Home') }}</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('images.create') }}">{{ __('Gallery') }}</a>
                                 </li>
                             </li>
-                        @endguest
+                        @endauth
                     </ul>
 
                     <!-- Right Side Of Navbar -->

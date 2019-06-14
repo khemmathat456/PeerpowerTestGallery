@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\imagesRequest;
 use App\Models\Images;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Response;
+
 
 class ImagesController extends Controller
 {
@@ -19,10 +19,10 @@ class ImagesController extends Controller
      */
     public function index()
     {
+        //
         $images = Images::all()->where('user_id',auth()->id());
-        $user = User::all()->where('id',auth()->id())[0];
-        $counter = $images->countBy('type');
-        return view('images_index', ['images'=>$images, 'counter'=>$counter, 'data_used'=>$user->data_used]);
+        return $images;
+
     }
 
     /**
@@ -32,7 +32,6 @@ class ImagesController extends Controller
      */
     public function create()
     {
-//        return view('images_create');
         return view('upload');
     }
 
@@ -42,15 +41,11 @@ class ImagesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(imagesRequest $request)
     {
-//        dd($request->file('fileUpload'));
-        $request->validate([
-            'fileUpload' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10485760',
-        ]);
 
         $image = $request->file('fileUpload');
-//        $path = Storage::disk('public')->putFile('images', $image);
+        $path = Storage::disk('public')->putFile('images', $image);
             Images::create([
                 'name' => $image->getClientOriginalName(),
                 'name_unique' => basename($path),
@@ -62,8 +57,8 @@ class ImagesController extends Controller
 //         Repo
         $user = User::all()->where('id',auth()->id())->first();
         $user->update(['data_used'=>$user->data_used+$image->getSize()]);
-//        }
-        return $path;
+
+        return basename($path);
 
 //        return redirect('/images');
     }
@@ -113,6 +108,6 @@ class ImagesController extends Controller
     {
         Storage::disk('public')->delete('images/'.$id);
         $photoModel->where('name_unique', $id)->delete();
-        return redirect('images');
+//        return redirect('images');
     }
 }

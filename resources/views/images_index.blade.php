@@ -1,24 +1,45 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class = "container">
+    <card-component>
+        <template v-slot:header>
+            <h1>Disk usage overview</h1>
+        </template>
+        <template v-slot:body>
+            Total size: {{ round($data_used/1048576, 2) }}MB ({{number_format($data_used)}}B) <br>
+            No of files: {{$total_images}}
+        </template>
+    </card-component>
+    <card-component>
+        <template v-slot:header>
+            <h1>Disk usage compositions</h1>
+        </template>
 
-    <h1>Data used: {{ $data_used }}</h1>
-    <h3>Type used:
-        @foreach($counter as $type => $count)
-            <h4>{{ $type }}:{{ $count }}</h4>
-        @endforeach
-    </h3>
-    @foreach ($images as $image)
-            <form action="{{ route('images.destroy', [$image->name_unique]) }}" enctype="multipart/form-data" method="post">
-                {{ method_field('DELETE') }}
-                {{ csrf_field() }}
-                <div class="form-group">
-                    <input type="submit" class="btn btn-danger delete-user" value="Delete user">
-                </div>
-            </form>
-            <p>This is {{ $image->name }}</p>
-        <img src="{{ url($image->path)}}">
-    </div>
-    @endforeach
+        <template v-slot:body>
+            @if($total_images)
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">No of files</th>
+                        <th scope="col">Size</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($counter as $type => $count)
+                        <tr>
+                            <td>{{ $type }}</td>
+                            <td>{{ $count }}</td>
+                            <td>{{ round($size_by_type[$type]/1048576, 2) }}MB ({{number_format($size_by_type[$type])}}B)</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            @else
+                No Data
+            @endif
+
+        </template>
+    </card-component>
+
 @endsection
