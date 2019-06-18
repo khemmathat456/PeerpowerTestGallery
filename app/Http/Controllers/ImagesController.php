@@ -19,7 +19,6 @@ class ImagesController extends Controller
      */
     public function index()
     {
-        //
         $images = Images::all()->where('user_id',auth()->id());
         return $images;
 
@@ -46,21 +45,18 @@ class ImagesController extends Controller
 
         $image = $request->file('fileUpload');
         $path = Storage::disk('public')->putFile('images', $image);
-            Images::create([
-                'name' => $image->getClientOriginalName(),
-                'name_unique' => basename($path),
-                'size' => $image->getSize(),
-                'type' => $image->getMimeType(),
-                'user_id' => auth()->id(),
-                'path' => $path,
-            ]);
-//         Repo
-        $user = User::all()->where('id',auth()->id())->first();
-        $user->update(['data_used'=>$user->data_used+$image->getSize()]);
+        $response = Images::create([
+            'name' => $image->getClientOriginalName(),
+            'name_unique' => basename($path),
+            'size' => $image->getSize(),
+            'type' => $image->getMimeType(),
+            'user_id' => auth()->id(),
+            'path' => $path,
+        ]);
 
-        return basename($path);
-
-//        return redirect('/images');
+//        dd($response);
+        return $response;
+//        return basename($path);
     }
 
     /**
@@ -71,9 +67,10 @@ class ImagesController extends Controller
      */
     public function show(Images $photoModel, $id)
     {
-        $path = storage_path('app/public/images/' . $id);
-        $file = File::get($path);
-        $type = File::mimeType($path);
+        $path = $photoModel::all()->where('name_unique', $id)->first()->path;
+        $storage_path = storage_path('app/public/' .$path);
+        $file = File::get($storage_path);
+        $type = File::mimeType($storage_path);
 
         return response($file)
             ->header('Content-Type', $type);
@@ -104,10 +101,10 @@ class ImagesController extends Controller
      * @param  \App\Images  $photoModel
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Images $photoModel,$id)
+    public function destroy(Images $photoModel, $id)
     {
-        Storage::disk('public')->delete('images/'.$id);
+        $path = $photoModel::all()->where('name_unique', $id)->first()->path;
+        Storage::disk('public')->delete($path);
         $photoModel->where('name_unique', $id)->delete();
-//        return redirect('images');
     }
 }

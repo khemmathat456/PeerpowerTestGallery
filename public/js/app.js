@@ -1795,14 +1795,31 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      files: '',
+      images: {},
+      lst_img: [],
+      files: [],
+      index: 0,
       uploadPercentage: 0,
       lst: {},
+      // TODO: pack lst
       path_lst: [],
-      show_modal: false,
       img: '',
       modal: false,
       err_lst: []
@@ -1811,10 +1828,35 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     checkFileType: function checkFileType() {
       this.files = this.$refs.myFiles.files;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-      for (var i = 0; i < this.files.length; i++) {
-        var file = this.files[i];
-        this.uploadfile(file);
+      try {
+        for (var _iterator = this.files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var file = _step.value;
+          this.images[this.index] = {
+            uploadPercentage: 0,
+            info: {},
+            modal: false,
+            err: ''
+          };
+          this.uploadfile(file);
+          this.index++;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
       }
     },
     uploadfile: function uploadfile(file) {
@@ -1827,19 +1869,41 @@ __webpack_require__.r(__webpack_exports__);
         };
       };
 
+      var Uploadprogress = function Uploadprogress(index) {
+        return function (progress) {
+          // this.$set(this.images, index, {uploadPercentage: Math.floor((progress.loaded * 100) / progress.total)});
+          Object.assign(_this.images[index], {
+            uploadPercentage: Math.floor(progress.loaded * 100 / progress.total)
+          });
+          console.log(_this.images[index]);
+        };
+      };
+
       var formData = new FormData();
       formData.append('fileUpload', file);
       var config = {
-        onUploadProgress: myUploadProgress(file.name)
+        // onUploadProgress: myUploadProgress(file.name)
+        onUploadProgress: Uploadprogress(this.index)
       };
       axios.post('/images', formData, config).then(function (response) {
-        _this.uploadPercentage = 0;
+        _this.$set(_this.images, _this.index, {
+          uploadPercentage: 0,
+          info: response.data,
+          err: '',
+          modal: false
+        }); // this.uploadPercentage =0;
+        // this.path_lst.push(response.data)
 
-        _this.path_lst.push(response.data);
       })["catch"](function (error) {
-        _this.uploadPercentage = 0;
+        console.log(error);
 
-        _this.err_lst.push(error.response.data.errors.fileUpload[1] + file.name);
+        _this.$set(_this.images, _this.index, {
+          uploadPercentage: 0,
+          info: {},
+          err: error.response.data.errors.fileUpload[1] + file.name,
+          modal: false
+        }); // this.err_lst.push(error.response.data.errors.fileUpload[1]+file.name)
+
       });
     },
     delete_image: function delete_image(id) {
@@ -1858,9 +1922,25 @@ __webpack_require__.r(__webpack_exports__);
     var _this2 = this;
 
     axios.get('/images').then(function (response) {
-      for (var image in response.data) {
-        _this2.path_lst.push(response.data[image].name_unique);
+      for (var index in response.data) {
+        _this2.$set(_this2.images, _this2.index++, {
+          uploadPercentage: 0,
+          info: response.data[index],
+          modal: false,
+          err: ''
+        }); //
+        // this.lst_img.push(this.index= {
+        //         uploadPercentage: 0,
+        //         info: response.data[index],
+        //         modal: false,
+        //         err: ''
+        //     }
+        // );
+        // this.path_lst.push(response.data[index].name_unique)
+
       }
+
+      console.log(_this2.images);
     });
   }
 });
@@ -37901,161 +37981,49 @@ var render = function() {
     _c(
       "div",
       { staticClass: "row" },
-      [
-        _vm._l(_vm.path_lst, function(path) {
-          return _vm.path_lst
-            ? _c(
-                "div",
-                {
-                  staticClass: "col-4",
-                  staticStyle: { "padding-bottom": "2rem" }
-                },
-                [
-                  path
-                    ? _c("div", { staticClass: "show-image" }, [
-                        _c("input", {
-                          staticClass: "delete btn btn-danger delete-user",
-                          attrs: { type: "button", value: "Delete" },
-                          on: {
-                            click: function($event) {
-                              return _vm.delete_image(path)
-                            }
-                          }
-                        }),
-                        _vm._v(" "),
-                        _c("input", {
-                          staticClass: "update btn btn-primary",
+      _vm._l(_vm.images, function(image) {
+        return _vm.images
+          ? _c("div", { staticClass: "col-4" }, [
+              image.info && !image.err
+                ? _c("div", [
+                    image.info && !image.err
+                      ? _c("img", {
                           attrs: {
-                            type: "button",
-                            value: "Show",
-                            "data-toggle": "modal",
-                            "data-target": ".image-modal-lg"
-                          },
-                          on: {
-                            click: function($event) {
-                              return _vm.show_image(path)
-                            }
-                          }
-                        }),
-                        _vm._v(" "),
-                        _vm.modal
-                          ? _c("div", [
-                              _c(
-                                "div",
-                                {
-                                  staticClass: "modal image-modal-lg",
-                                  attrs: {
-                                    id: "image-modal-lg",
-                                    tabindex: "-1",
-                                    "aria-labelledby": "myLargeModalLabel",
-                                    "aria-hidden": "true"
-                                  }
-                                },
-                                [
-                                  _c(
-                                    "div",
-                                    {
-                                      staticClass: "container-fluid",
-                                      attrs: { role: "document" }
-                                    },
-                                    [
-                                      _c(
-                                        "div",
-                                        { staticClass: "modal-content" },
-                                        [
-                                          _c("img", {
-                                            attrs: {
-                                              id: _vm.img,
-                                              src: _vm.img,
-                                              alt: ""
-                                            }
-                                          })
-                                        ]
-                                      ),
-                                      _vm._v(" "),
-                                      _c(
-                                        "div",
-                                        { staticClass: "modal-footer" },
-                                        [
-                                          _c(
-                                            "button",
-                                            {
-                                              staticClass: "close",
-                                              attrs: {
-                                                type: "button",
-                                                "data-dismiss": "modal",
-                                                "aria-label": "Close"
-                                              },
-                                              on: {
-                                                click: function($event) {
-                                                  _vm.modal = false
-                                                }
-                                              }
-                                            },
-                                            [
-                                              _c(
-                                                "span",
-                                                {
-                                                  attrs: {
-                                                    "aria-hidden": "true"
-                                                  }
-                                                },
-                                                [_vm._v("×")]
-                                              )
-                                            ]
-                                          )
-                                        ]
-                                      )
-                                    ]
-                                  )
-                                ]
-                              )
-                            ])
-                          : _vm._e(),
-                        _vm._v(" "),
-                        _c("img", {
-                          attrs: {
-                            id: path,
-                            src: path,
+                            src: image.info.name_unique,
                             alt: "",
                             width: "200px",
                             height: "200px"
-                          },
-                          on: { mouseover: function($event) {} }
-                        })
-                      ])
-                    : _vm._e()
-                ]
-              )
-            : _vm._e()
-        }),
-        _vm._v(" "),
-        _vm._l(_vm.err_lst, function(err) {
-          return _vm.err_lst
-            ? _c("div", { staticStyle: { "padding-bottom": "2rem" } }, [
-                err
-                  ? _c("div", { staticClass: "col-4" }, [
-                      _c("input", {
-                        staticClass: "delete btn btn-danger delete-user",
-                        attrs: { type: "button", value: "Delete" },
-                        on: {
-                          click: function($event) {
-                            return _vm.delete_err(err)
                           }
+                        })
+                      : image.uploadPercentage
+                      ? _c("div", [
+                          _vm._v(_vm._s(image.uploadPercentage) + "%")
+                        ])
+                      : _vm._e()
+                  ])
+                : _vm._e(),
+              _vm._v(" "),
+              image.err
+                ? _c("div", [
+                    _c("input", {
+                      staticClass: "delete btn btn-danger delete-user",
+                      attrs: { type: "button", value: "Delete" },
+                      on: {
+                        click: function($event) {
+                          return _vm.delete_err(_vm.err)
                         }
-                      }),
-                      _vm._v(
-                        "\n                    " +
-                          _vm._s(err) +
-                          "\n                "
-                      )
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("span", { staticStyle: { color: "red" } }, [
+                      _vm._v(_vm._s(image.err))
                     ])
-                  : _vm._e()
-              ])
-            : _vm._e()
-        })
-      ],
-      2
+                  ])
+                : _vm._e()
+            ])
+          : _vm._e()
+      }),
+      0
     )
   ])
 }
