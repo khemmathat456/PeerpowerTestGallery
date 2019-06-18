@@ -11,10 +11,10 @@
 |
 */
 
-Route::get('/', 'homepageController@overview');
+Route::get('/', 'homepageController@overview')->middleware('auth');
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::resource('images', 'ImagesController');
+Route::resource('images', 'ImagesController')->middleware('auth');

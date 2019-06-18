@@ -55,8 +55,8 @@ class ImagesController extends Controller
         ]);
 
 //        dd($response);
-        return $response;
-//        return basename($path);
+//        return $response;
+        return basename($path);
     }
 
     /**

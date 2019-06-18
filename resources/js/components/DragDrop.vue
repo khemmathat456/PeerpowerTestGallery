@@ -55,21 +55,14 @@
 <!--                    <span style="color: red">{{ err }}</span>-->
 <!--                </div>-->
 <!--            </div>-->
-
 <!--        </div>-->
 
 
         <div class="row">
-            <div class="col-4" v-if="images" v-for="image in images">
-                <div v-if="image.info && !image.err">
-                    <img v-if="image.info && !image.err" :src="image.info.name_unique" alt="" width="200px" height="200px">
-                    <div v-else-if="image.uploadPercentage">{{ image.uploadPercentage }}%</div>
-                </div>
-                <div v-if="image.err">
-                    <input type="button" value="Delete" class="delete btn btn-danger delete-user" @click="delete_err(err)">
-                    <span style="color: red">{{ image.err }}</span>
-                </div>
-            </div>
+           <div class="col-4" v-for="img in lst_img">
+               <input type="button" value="Delete" class="delete btn btn-danger delete-user" @click="delete_image(img)">
+               <img @mouseover="" :src="img.image.name_unique" alt="" width="200px" height="200px">
+           </div>
         </div>
 
     </div>
@@ -81,8 +74,8 @@
            return {
                images:{},
                lst_img: [],
-               files:[],
                index:0,
+               files:[],
                uploadPercentage: 0,
                lst: {}, // TODO: pack lst
                path_lst: [],
@@ -96,12 +89,6 @@
                 this.files = this.$refs.myFiles.files
 
                 for(let file of this.files){
-                    this.images[this.index]= {
-                        uploadPercentage: 0,
-                        info: {},
-                        modal: false,
-                        err: ''
-                    };
 
                     this.uploadfile(file);
                     this.index++
@@ -117,34 +104,33 @@
 
                 const Uploadprogress = (index) => (progress) => {
                     // this.$set(this.images, index, {uploadPercentage: Math.floor((progress.loaded * 100) / progress.total)});
-                    Object.assign(this.images[index],{uploadPercentage: Math.floor((progress.loaded * 100) / progress.total)})
-                    console.log(this.images[index])
+                    this.lst_img[this.index].uploadPercentage = Math.floor((progress.loaded * 100) / progress.total)
                 };
                 let formData = new FormData();
 
                 formData.append('fileUpload', file);
                 var config = {
-                    // onUploadProgress: myUploadProgress(file.name)
-                    onUploadProgress: Uploadprogress(this.index)
+                    onUploadProgress: myUploadProgress(file.name)
+                    // onUploadProgress: Uploadprogress(this.index)
                 };
 
                 axios.post('/images', formData, config).then((response) =>  {
-                    this.$set(this.images, this.index, {uploadPercentage: 0, info: response.data, err: '', modal: false});
+                    // this.$set(this.images, this.index, {uploadPercentage: 0, info: response.data, err: '', modal: false});
 
-                    // this.uploadPercentage =0;
-                    // this.path_lst.push(response.data)
+                    this.uploadPercentage =0;
+                    this.path_lst.push(response.data)
                 })
                 .catch((error) => {
                     console.log(error)
-                    this.$set(this.images, this.index, {uploadPercentage: 0, info: {}, err: error.response.data.errors.fileUpload[1]+file.name,  modal: false});
-                    // this.err_lst.push(error.response.data.errors.fileUpload[1]+file.name)
+                    // this.$set(this.images, this.index, {uploadPercentage: 0, info: {}, err: error.response.data.errors.fileUpload[1]+file.name,  modal: false});
+                    this.err_lst.push(error.response.data.errors.fileUpload[1]+file.name)
                 });
             },
 
 
-            delete_image(id){
-                this.path_lst.splice(this.path_lst.indexOf(id), 1)
-                axios.delete('/images/'+id);
+            delete_image(img){
+                axios.delete('/images/'+img.image.name_unique);
+                this.lst_img.splice(this.lst_img.indexOf(img), 1)
             },
 
             delete_err(err){
@@ -157,27 +143,21 @@
             }
         },
         created(){
-                axios.get('/images').then((response) => {
-                    for (let index in response.data) {
-                        this.$set(this.images,this.index++,{
-                                uploadPercentage: 0,
-                                info: response.data[index],
-                                modal: false,
-                                err: ''
-                            })
-                        //
-                        // this.lst_img.push(this.index= {
-                        //         uploadPercentage: 0,
-                        //         info: response.data[index],
-                        //         modal: false,
-                        //         err: ''
-                        //     }
-                        // );
+            axios.get('/images').then((response) => {
+                for (let index in response.data) {
+                    this.images[index] = {
+                        image:response.data[index],
+                        uploadPercentage:0,
+                        modal:false,
+                        err:''
+                    };
 
-                        // this.path_lst.push(response.data[index].name_unique)
-                    }
-                    console.log(this.images);
-                });
+                    // this.path_lst.push(response.data[index].name_unique)
+                    this.lst_img.push(this.images[index])
+                }
+                // console.log(this.images);
+                // console.log(this.lst_img);
+            });
         },
     }
 </script>
