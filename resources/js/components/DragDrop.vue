@@ -61,7 +61,29 @@
         <div class="row">
            <div class="col-4" v-for="img in lst_img">
                <input type="button" value="Delete" class="delete btn btn-danger delete-user" @click="delete_image(img)">
-               <img @mouseover="" :src="img.image.name_unique" alt="" width="200px" height="200px">
+               <input type="button" value="Show" class="update btn btn-primary" @click="show_image(img)" data-toggle="modal" data-target=".image-modal-lg">
+
+               <div v-if="img.modal">
+                   <div class="modal image-modal-lg" id="image-modal-lg" tabindex="-1" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                       <div class="container-fluid" role="document">
+                           <div class="modal-content">
+                               <img :src="img.image.name_unique" alt="">
+                           </div>
+
+
+                           <div class="modal-footer">
+                               <button type="button" @click="img.modal=false" class="close" data-dismiss="modal" aria-label="Close">
+                                   <span aria-hidden="true">&times;</span>
+                               </button>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+               <div v-if="index==1"><h1>11111111111111</h1></div>
+               <div v-else-if="index==2"><h1>222222222222222</h1></div>
+               <div v-else-if="index==3"><h1>333333333333333</h1></div>
+               <img v-if="img" :src="img.image.name_unique" alt="" width="200px" height="200px">
+               {{ img.uploadPercentage }}
            </div>
         </div>
 
@@ -76,12 +98,6 @@
                lst_img: [],
                index:0,
                files:[],
-               uploadPercentage: 0,
-               lst: {}, // TODO: pack lst
-               path_lst: [],
-               img: '',
-               modal: false,
-               err_lst: []
            };
         },
         methods: {
@@ -89,41 +105,45 @@
                 this.files = this.$refs.myFiles.files
 
                 for(let file of this.files){
-
+                    this.images[this.lst_img.length] = {
+                        image:{},
+                        uploadPercentage:0,
+                        modal:false,
+                        err:''
+                    };
+                    // this.lst_img.push(this.images[this.lst_img.length])
                     this.uploadfile(file);
-                    this.index++
                 }
-
             },
 
             uploadfile(file) {
-                const myUploadProgress = (myFileId) => (progress) => {
-                    this.uploadPercentage = Math.floor((progress.loaded * 100) / progress.total);
-                    this.lst[myFileId] = this.uploadPercentage;
-                };
-
                 const Uploadprogress = (index) => (progress) => {
                     // this.$set(this.images, index, {uploadPercentage: Math.floor((progress.loaded * 100) / progress.total)});
-                    this.lst_img[this.index].uploadPercentage = Math.floor((progress.loaded * 100) / progress.total)
+                    Object.assign(this.images[index].uploadPercentage = Math.floor((progress.loaded * 100) / progress.total))
+                    console.log(this.images[index].uploadPercentage)
                 };
                 let formData = new FormData();
 
                 formData.append('fileUpload', file);
                 var config = {
-                    onUploadProgress: myUploadProgress(file.name)
-                    // onUploadProgress: Uploadprogress(this.index)
+                    onUploadProgress: Uploadprogress(this.lst_img.length)
                 };
-
                 axios.post('/images', formData, config).then((response) =>  {
-                    // this.$set(this.images, this.index, {uploadPercentage: 0, info: response.data, err: '', modal: false});
-
-                    this.uploadPercentage =0;
-                    this.path_lst.push(response.data)
+                    // Object.assign(this.images[this.lst_img.length].image = response.data)
+                    // this.$set(this.images, this.lst_img.length, {image:response.data});
+                    this.images[this.lst_img.length] = {
+                        image:response.data,
+                        uploadPercentage:0,
+                        modal:false,
+                        err:''
+                    }
+                    this.lst_img.push(this.images[this.lst_img.length])
+                    console.log(this.images)
                 })
-                .catch((error) => {
-                    console.log(error)
-                    // this.$set(this.images, this.index, {uploadPercentage: 0, info: {}, err: error.response.data.errors.fileUpload[1]+file.name,  modal: false});
-                    this.err_lst.push(error.response.data.errors.fileUpload[1]+file.name)
+                .catch(error => {
+                    if (error.response){
+                        Object.assign(this.images[this.lst_img.length].err = error.response.data.errors.fileUpload[1]+file.name)
+                    }
                 });
             },
 
@@ -133,13 +153,8 @@
                 this.lst_img.splice(this.lst_img.indexOf(img), 1)
             },
 
-            delete_err(err){
-                this.err_lst.splice(this.err_lst.indexOf(err), 1)
-            },
-
-            show_image(id){
-                this.modal = true;
-                this.img = id;
+            show_image(img){
+                img.modal = true
             }
         },
         created(){
@@ -152,11 +167,8 @@
                         err:''
                     };
 
-                    // this.path_lst.push(response.data[index].name_unique)
                     this.lst_img.push(this.images[index])
                 }
-                // console.log(this.images);
-                // console.log(this.lst_img);
             });
         },
     }
