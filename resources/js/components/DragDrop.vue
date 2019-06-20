@@ -14,76 +14,41 @@
             </div>
         </div>
 
-<!--        <div class="row">-->
-<!--                <div v-if="uploadPercentage">-->
-<!--                    <div v-for="file in files">-->
-<!--                        {{ file.name }}-->
-<!--                        <progress max="100" :value.prop="lst[file.name]"></progress>-->
-<!--                        {{ lst[file.name] }}%-->
-<!--                    </div>-->
-<!--                </div>-->
-
-<!--            <div class="col-4" v-if="path_lst" v-for="path in path_lst" style="padding-bottom: 2rem">-->
-<!--                <div class="show-image" v-if="path">-->
-
-<!--                    <input type="button" value="Delete" class="delete btn btn-danger delete-user" @click="delete_image(path)">-->
-<!--                    <input type="button" value="Show" class="update btn btn-primary" @click="show_image(path)" data-toggle="modal" data-target=".image-modal-lg">-->
-
-<!--                    <div v-if="modal">-->
-<!--                        <div class="modal image-modal-lg" id="image-modal-lg" tabindex="-1" aria-labelledby="myLargeModalLabel" aria-hidden="true">-->
-<!--                            <div class="container-fluid" role="document">-->
-<!--                                <div class="modal-content">-->
-<!--                                    <img :id="img" :src="img" alt="">-->
-<!--                                </div>-->
-
-<!--                                <div class="modal-footer">-->
-<!--                                    <button type="button" @click="modal=false" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                                        <span aria-hidden="true">&times;</span>-->
-<!--                                    </button>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-
-<!--                    <img :id="path" @mouseover="" :src="path" alt="" width="200px" height="200px">-->
-<!--                </div>-->
-<!--            </div>-->
-
-<!--            <div class="col-4" v-if="err_lst" v-for="err in err_lst" style="padding-bottom: 2rem">-->
-<!--                <div class="show-image" v-if="err">-->
-<!--                    <input type="button" value="Delete" class="delete btn btn-danger delete-user" @click="delete_err(err)">-->
-<!--                    <span style="color: red">{{ err }}</span>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-
-
         <div class="row">
-           <div class="col-4" v-for="img in lst_img">
-               <input type="button" value="Delete" class="delete btn btn-danger delete-user" @click="delete_image(img)">
-               <input type="button" value="Show" class="update btn btn-primary" @click="show_image(img)" data-toggle="modal" data-target=".image-modal-lg">
+           <div class="col-4 " style="padding-bottom: 2rem" v-for="(img, index) in lst_img">
+               <div class="card d-flex border-light text-center show-image" style="border: 0px; width: 100%; height: 200px ">
+
+
+               <div class="d-flex justify-content-center card-body" v-if="img.uploadPercentage">
+                   <p class="align-self-center text-primary card-text">{{ img.uploadPercentage+'%' }}</p>
+               </div>
+
+                   <button type="button" v-if="img.image.name_unique" value="Delete" class="delete btn btn-danger delete-user" @click="delete_image(img)">Delete</button>
+                   <button type="button" v-if="img.image.name_unique" value="Show" class="update btn btn-primary" @click="show_image(img)" data-toggle="modal" data-target=".image-modal-lg">show</button>
+               <img v-if="img.image.name_unique" class="card-img" :id="index" :src="img.image.name_unique" alt="Card image" height="100%">
 
                <div v-if="img.modal">
-                   <div class="modal image-modal-lg" id="image-modal-lg" tabindex="-1" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-                       <div class="container-fluid" role="document">
+                   <div class="modal image-modal-lg" role="dialog" id="image-modal-lg" tabindex="-1" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                       <div class="modal-dialog" style="max-width: 60%">
                            <div class="modal-content">
-                               <img :src="img.image.name_unique" alt="">
-                           </div>
-
+                                <img class="img-fluid"  :src="img.image.name_unique" alt="">
 
                            <div class="modal-footer">
                                <button type="button" @click="img.modal=false" class="close" data-dismiss="modal" aria-label="Close">
                                    <span aria-hidden="true">&times;</span>
                                </button>
                            </div>
+                           </div>
                        </div>
                    </div>
                </div>
-               <div v-if="index==1"><h1>11111111111111</h1></div>
-               <div v-else-if="index==2"><h1>222222222222222</h1></div>
-               <div v-else-if="index==3"><h1>333333333333333</h1></div>
-               <img v-if="img" :src="img.image.name_unique" alt="" width="200px" height="200px">
-               {{ img.uploadPercentage }}
+
+               <div class="d-flex justify-content-center card-body" v-if="img.err">
+                   <button v-if="img.err" type="button" value="Delete" class=" delete_error btn btn-danger delete-user" @click="delete_image(img)">Delete</button>
+                   <p v-if="img.err" class="align-self-center text-danger card-text">{{ img.err }}</p>
+               </div>
+
+               </div>
            </div>
         </div>
 
@@ -94,7 +59,6 @@
     export default {
         data() {
            return {
-               images:{},
                lst_img: [],
                index:0,
                files:[],
@@ -102,47 +66,46 @@
         },
         methods: {
             checkFileType() {
-                this.files = this.$refs.myFiles.files
-
-                for(let file of this.files){
-                    this.images[this.lst_img.length] = {
-                        image:{},
-                        uploadPercentage:0,
-                        modal:false,
-                        err:''
-                    };
-                    // this.lst_img.push(this.images[this.lst_img.length])
+                this.files = this.$refs.myFiles.files;
+                for(let file of this.$refs.myFiles.files){
                     this.uploadfile(file);
                 }
+                this.$refs.myFiles.value = null
             },
 
             uploadfile(file) {
+
+                let images = {
+                    image:{},
+                    uploadPercentage:0,
+                    modal:false,
+                    err:''
+                };
+                this.lst_img.push(images)
+
                 const Uploadprogress = (index) => (progress) => {
-                    // this.$set(this.images, index, {uploadPercentage: Math.floor((progress.loaded * 100) / progress.total)});
-                    Object.assign(this.images[index].uploadPercentage = Math.floor((progress.loaded * 100) / progress.total))
-                    console.log(this.images[index].uploadPercentage)
+                    Object.assign(images.uploadPercentage = Math.floor((progress.loaded * 100) / progress.total))
                 };
                 let formData = new FormData();
 
                 formData.append('fileUpload', file);
                 var config = {
-                    onUploadProgress: Uploadprogress(this.lst_img.length)
+                    onUploadProgress: Uploadprogress(file.name)
                 };
+
                 axios.post('/images', formData, config).then((response) =>  {
-                    // Object.assign(this.images[this.lst_img.length].image = response.data)
-                    // this.$set(this.images, this.lst_img.length, {image:response.data});
-                    this.images[this.lst_img.length] = {
-                        image:response.data,
-                        uploadPercentage:0,
-                        modal:false,
-                        err:''
-                    }
-                    this.lst_img.push(this.images[this.lst_img.length])
-                    console.log(this.images)
+                    Object.assign(images.uploadPercentage = 0)
+                    Object.assign(images.image = response.data)
+
+
+                    this.index++
+
                 })
                 .catch(error => {
                     if (error.response){
-                        Object.assign(this.images[this.lst_img.length].err = error.response.data.errors.fileUpload[1]+file.name)
+                        Object.assign(images.uploadPercentage = 0)
+                        Object.assign(images.err = error.response.data.errors.fileUpload[1]+file.name)
+                        this.index++
                     }
                 });
             },
@@ -151,6 +114,10 @@
             delete_image(img){
                 axios.delete('/images/'+img.image.name_unique);
                 this.lst_img.splice(this.lst_img.indexOf(img), 1)
+
+                console.log(img)
+                console.log(this.images)
+                console.log(this.lst_img)
             },
 
             show_image(img){
@@ -160,14 +127,14 @@
         created(){
             axios.get('/images').then((response) => {
                 for (let index in response.data) {
-                    this.images[index] = {
+                    let images = {
                         image:response.data[index],
                         uploadPercentage:0,
                         modal:false,
                         err:''
                     };
 
-                    this.lst_img.push(this.images[index])
+                    this.lst_img.push(images)
                 }
             });
         },
@@ -202,32 +169,40 @@
 
 
     div.show-image {
-    position: relative;
-    float: left;
-    margin: 5px;
-    }
-
-    div.show-image:hover img {
-        opacity: 1;
-    }
-
-    div.show-image:hover input {
+        position: relative;
+        float: left;
+        /*margin: 5px;*/
         display: block;
     }
 
-    div.show-image input {
-        position: absolute;
+    div.show-image:hover img.card-img {
+        opacity: 0;
         display: none;
     }
-
-    div.show-image input.update {
-        top: 50%;
+    div.show-image:hover div.card-body p {
+        display: none;
+        opacity: 0;
+    }
+    div.show-image:hover button {
+        display: block;
+        opacity: 1;
+    }
+    div.show-image button {
+        position: absolute;
+        opacity: 0;
+    }
+    div.show-image button.update {
+        top: 40%;
         left: 12.5%;
     }
-
-    div.show-image input.delete {
-        top: 50%;
+    div.show-image button.delete {
+        top: 40%;
         left: 50%;
     }
+    div.show-image button.delete_error {
+        top: 40%;
+        left: 30%;
+    }
+
 
 </style>

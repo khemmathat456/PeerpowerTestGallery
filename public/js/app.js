@@ -1789,40 +1789,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      images: {},
       lst_img: [],
-      files: [],
       index: 0,
-      uploadPercentage: 0,
-      lst: {},
-      // TODO: pack lst
-      path_lst: [],
-      img: '',
-      modal: false,
-      err_lst: []
+      files: []
     };
   },
   methods: {
@@ -1833,16 +1805,9 @@ __webpack_require__.r(__webpack_exports__);
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = this.files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = this.$refs.myFiles.files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var file = _step.value;
-          this.images[this.index] = {
-            uploadPercentage: 0,
-            info: {},
-            modal: false,
-            err: ''
-          };
           this.uploadfile(file);
-          this.index++;
         }
       } catch (err) {
         _didIteratorError = true;
@@ -1858,64 +1823,52 @@ __webpack_require__.r(__webpack_exports__);
           }
         }
       }
+
+      this.$refs.myFiles.value = null;
     },
     uploadfile: function uploadfile(file) {
       var _this = this;
 
-      var myUploadProgress = function myUploadProgress(myFileId) {
-        return function (progress) {
-          _this.uploadPercentage = Math.floor(progress.loaded * 100 / progress.total);
-          _this.lst[myFileId] = _this.uploadPercentage;
-        };
+      var images = {
+        image: {},
+        uploadPercentage: 0,
+        modal: false,
+        err: ''
       };
+      this.lst_img.push(images);
 
       var Uploadprogress = function Uploadprogress(index) {
         return function (progress) {
-          // this.$set(this.images, index, {uploadPercentage: Math.floor((progress.loaded * 100) / progress.total)});
-          Object.assign(_this.images[index], {
-            uploadPercentage: Math.floor(progress.loaded * 100 / progress.total)
-          });
-          console.log(_this.images[index]);
+          Object.assign(images.uploadPercentage = Math.floor(progress.loaded * 100 / progress.total));
         };
       };
 
       var formData = new FormData();
       formData.append('fileUpload', file);
       var config = {
-        // onUploadProgress: myUploadProgress(file.name)
-        onUploadProgress: Uploadprogress(this.index)
+        onUploadProgress: Uploadprogress(file.name)
       };
       axios.post('/images', formData, config).then(function (response) {
-        _this.$set(_this.images, _this.index, {
-          uploadPercentage: 0,
-          info: response.data,
-          err: '',
-          modal: false
-        }); // this.uploadPercentage =0;
-        // this.path_lst.push(response.data)
-
+        Object.assign(images.uploadPercentage = 0);
+        Object.assign(images.image = response.data);
+        _this.index++;
       })["catch"](function (error) {
-        console.log(error);
-
-        _this.$set(_this.images, _this.index, {
-          uploadPercentage: 0,
-          info: {},
-          err: error.response.data.errors.fileUpload[1] + file.name,
-          modal: false
-        }); // this.err_lst.push(error.response.data.errors.fileUpload[1]+file.name)
-
+        if (error.response) {
+          Object.assign(images.uploadPercentage = 0);
+          Object.assign(images.err = error.response.data.errors.fileUpload[1] + file.name);
+          _this.index++;
+        }
       });
     },
-    delete_image: function delete_image(id) {
-      this.path_lst.splice(this.path_lst.indexOf(id), 1);
-      axios["delete"]('/images/' + id);
+    delete_image: function delete_image(img) {
+      axios["delete"]('/images/' + img.image.name_unique);
+      this.lst_img.splice(this.lst_img.indexOf(img), 1);
+      console.log(img);
+      console.log(this.images);
+      console.log(this.lst_img);
     },
-    delete_err: function delete_err(err) {
-      this.err_lst.splice(this.err_lst.indexOf(err), 1);
-    },
-    show_image: function show_image(id) {
-      this.modal = true;
-      this.img = id;
+    show_image: function show_image(img) {
+      img.modal = true;
     }
   },
   created: function created() {
@@ -1923,24 +1876,15 @@ __webpack_require__.r(__webpack_exports__);
 
     axios.get('/images').then(function (response) {
       for (var index in response.data) {
-        _this2.$set(_this2.images, _this2.index++, {
+        var images = {
+          image: response.data[index],
           uploadPercentage: 0,
-          info: response.data[index],
           modal: false,
           err: ''
-        }); //
-        // this.lst_img.push(this.index= {
-        //         uploadPercentage: 0,
-        //         info: response.data[index],
-        //         modal: false,
-        //         err: ''
-        //     }
-        // );
-        // this.path_lst.push(response.data[index].name_unique)
+        };
 
+        _this2.lst_img.push(images);
       }
-
-      console.log(_this2.images);
     });
   }
 });
@@ -6437,7 +6381,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".dropbox {\n  outline: 2px dashed grey;\n  /* the dash box */\n  padding: 10px 10px;\n  position: relative;\n  cursor: pointer;\n}\n.input-file {\n  opacity: 0;\n  /* invisible but it's there! */\n  width: 100%;\n  height: 100%;\n  position: absolute;\n  cursor: pointer;\n}\n.dropbox:hover {\n  background: lightblue;\n  /* when mouse over to the drop zone, change color */\n}\n.dropbox p {\n  font-size: 1.2em;\n  text-align: center;\n  padding: 50px 0;\n}\ndiv.show-image {\n  position: relative;\n  float: left;\n  margin: 5px;\n}\ndiv.show-image:hover img {\n  opacity: 1;\n}\ndiv.show-image:hover input {\n  display: block;\n}\ndiv.show-image input {\n  position: absolute;\n  display: none;\n}\ndiv.show-image input.update {\n  top: 50%;\n  left: 12.5%;\n}\ndiv.show-image input.delete {\n  top: 50%;\n  left: 50%;\n}", ""]);
+exports.push([module.i, ".dropbox {\n  outline: 2px dashed grey;\n  /* the dash box */\n  padding: 10px 10px;\n  position: relative;\n  cursor: pointer;\n}\n.input-file {\n  opacity: 0;\n  /* invisible but it's there! */\n  width: 100%;\n  height: 100%;\n  position: absolute;\n  cursor: pointer;\n}\n.dropbox:hover {\n  background: lightblue;\n  /* when mouse over to the drop zone, change color */\n}\n.dropbox p {\n  font-size: 1.2em;\n  text-align: center;\n  padding: 50px 0;\n}\ndiv.show-image {\n  position: relative;\n  float: left;\n  /*margin: 5px;*/\n  display: block;\n}\ndiv.show-image:hover img.card-img {\n  opacity: 0;\n  display: none;\n}\ndiv.show-image:hover div.card-body p {\n  display: none;\n  opacity: 0;\n}\ndiv.show-image:hover button {\n  display: block;\n  opacity: 1;\n}\ndiv.show-image button {\n  position: absolute;\n  opacity: 0;\n}\ndiv.show-image button.update {\n  top: 40%;\n  left: 12.5%;\n}\ndiv.show-image button.delete {\n  top: 40%;\n  left: 50%;\n}\ndiv.show-image button.delete_error {\n  top: 40%;\n  left: 30%;\n}", ""]);
 
 // exports
 
@@ -37969,7 +37913,7 @@ var render = function() {
               _vm._v(" "),
               _c("p", [
                 _vm._v(
-                  "\n                        Drop files here or click to choose files...\n                    "
+                  "\n                    Drop files here or click to choose files...\n                "
                 )
               ])
             ])
@@ -37981,47 +37925,188 @@ var render = function() {
     _c(
       "div",
       { staticClass: "row" },
-      _vm._l(_vm.images, function(image) {
-        return _vm.images
-          ? _c("div", { staticClass: "col-4" }, [
-              image.info && !image.err
-                ? _c("div", [
-                    image.info && !image.err
-                      ? _c("img", {
-                          attrs: {
-                            src: image.info.name_unique,
-                            alt: "",
-                            width: "200px",
-                            height: "200px"
+      _vm._l(_vm.lst_img, function(img, index) {
+        return _c(
+          "div",
+          { staticClass: "col-4 ", staticStyle: { "padding-bottom": "2rem" } },
+          [
+            _c(
+              "div",
+              {
+                staticClass: "card d-flex border-light text-center show-image",
+                staticStyle: { border: "0px", width: "100%", height: "200px" }
+              },
+              [
+                img.uploadPercentage
+                  ? _c(
+                      "div",
+                      {
+                        staticClass: "d-flex justify-content-center card-body"
+                      },
+                      [
+                        _c(
+                          "p",
+                          {
+                            staticClass:
+                              "align-self-center text-primary card-text"
+                          },
+                          [_vm._v(_vm._s(img.uploadPercentage + "%"))]
+                        )
+                      ]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                img.image.name_unique
+                  ? _c(
+                      "button",
+                      {
+                        staticClass: "delete btn btn-danger delete-user",
+                        attrs: { type: "button", value: "Delete" },
+                        on: {
+                          click: function($event) {
+                            return _vm.delete_image(img)
                           }
-                        })
-                      : image.uploadPercentage
-                      ? _c("div", [
-                          _vm._v(_vm._s(image.uploadPercentage) + "%")
-                        ])
-                      : _vm._e()
-                  ])
-                : _vm._e(),
-              _vm._v(" "),
-              image.err
-                ? _c("div", [
-                    _c("input", {
-                      staticClass: "delete btn btn-danger delete-user",
-                      attrs: { type: "button", value: "Delete" },
-                      on: {
-                        click: function($event) {
-                          return _vm.delete_err(_vm.err)
                         }
+                      },
+                      [_vm._v("Delete")]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                img.image.name_unique
+                  ? _c(
+                      "button",
+                      {
+                        staticClass: "update btn btn-primary",
+                        attrs: {
+                          type: "button",
+                          value: "Show",
+                          "data-toggle": "modal",
+                          "data-target": ".image-modal-lg"
+                        },
+                        on: {
+                          click: function($event) {
+                            return _vm.show_image(img)
+                          }
+                        }
+                      },
+                      [_vm._v("show")]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                img.image.name_unique
+                  ? _c("img", {
+                      staticClass: "card-img",
+                      attrs: {
+                        id: index,
+                        src: img.image.name_unique,
+                        alt: "Card image",
+                        height: "100%"
                       }
-                    }),
-                    _vm._v(" "),
-                    _c("span", { staticStyle: { color: "red" } }, [
-                      _vm._v(_vm._s(image.err))
+                    })
+                  : _vm._e(),
+                _vm._v(" "),
+                img.modal
+                  ? _c("div", [
+                      _c(
+                        "div",
+                        {
+                          staticClass: "modal image-modal-lg",
+                          attrs: {
+                            role: "dialog",
+                            id: "image-modal-lg",
+                            tabindex: "-1",
+                            "aria-labelledby": "myLargeModalLabel",
+                            "aria-hidden": "true"
+                          }
+                        },
+                        [
+                          _c(
+                            "div",
+                            {
+                              staticClass: "modal-dialog",
+                              staticStyle: { "max-width": "60%" }
+                            },
+                            [
+                              _c("div", { staticClass: "modal-content" }, [
+                                _c("img", {
+                                  staticClass: "img-fluid",
+                                  attrs: { src: img.image.name_unique, alt: "" }
+                                }),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "modal-footer" }, [
+                                  _c(
+                                    "button",
+                                    {
+                                      staticClass: "close",
+                                      attrs: {
+                                        type: "button",
+                                        "data-dismiss": "modal",
+                                        "aria-label": "Close"
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          img.modal = false
+                                        }
+                                      }
+                                    },
+                                    [
+                                      _c(
+                                        "span",
+                                        { attrs: { "aria-hidden": "true" } },
+                                        [_vm._v("×")]
+                                      )
+                                    ]
+                                  )
+                                ])
+                              ])
+                            ]
+                          )
+                        ]
+                      )
                     ])
-                  ])
-                : _vm._e()
-            ])
-          : _vm._e()
+                  : _vm._e(),
+                _vm._v(" "),
+                img.err
+                  ? _c(
+                      "div",
+                      {
+                        staticClass: "d-flex justify-content-center card-body"
+                      },
+                      [
+                        img.err
+                          ? _c(
+                              "button",
+                              {
+                                staticClass:
+                                  " delete_error btn btn-danger delete-user",
+                                attrs: { type: "button", value: "Delete" },
+                                on: {
+                                  click: function($event) {
+                                    return _vm.delete_image(img)
+                                  }
+                                }
+                              },
+                              [_vm._v("Delete")]
+                            )
+                          : _vm._e(),
+                        _vm._v(" "),
+                        img.err
+                          ? _c(
+                              "p",
+                              {
+                                staticClass:
+                                  "align-self-center text-danger card-text"
+                              },
+                              [_vm._v(_vm._s(img.err))]
+                            )
+                          : _vm._e()
+                      ]
+                    )
+                  : _vm._e()
+              ]
+            )
+          ]
+        )
       }),
       0
     )
