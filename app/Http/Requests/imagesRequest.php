@@ -32,7 +32,7 @@ class imagesRequest extends FormRequest
     public function messages()
     {
         return [
-            'fileUpload.required'    => 'A title is required',
+            'fileUpload.required'    => 'File is required',
             'fileUpload.mimes'    => 'File type not supported - ',
             'fileUpload.max'    => 'Maximum is 10MB',
         ];

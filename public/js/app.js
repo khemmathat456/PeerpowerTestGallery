@@ -1792,14 +1792,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      lst_img: [],
-      index: 0,
-      files: []
+      lst_img: []
     };
   },
   methods: {
     checkFileType: function checkFileType() {
-      this.files = this.$refs.myFiles.files;
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -1827,52 +1824,46 @@ __webpack_require__.r(__webpack_exports__);
       this.$refs.myFiles.value = null;
     },
     uploadfile: function uploadfile(file) {
-      var _this = this;
-
       var images = {
         image: {},
         uploadPercentage: 0,
         modal: false,
         err: ''
       };
-      this.lst_img.push(images);
 
       var Uploadprogress = function Uploadprogress(index) {
         return function (progress) {
-          Object.assign(images.uploadPercentage = Math.floor(progress.loaded * 100 / progress.total));
+          images.uploadPercentage = Math.floor(progress.loaded * 100 / progress.total);
         };
       };
 
       var formData = new FormData();
+      console.log(images);
       formData.append('fileUpload', file);
       var config = {
         onUploadProgress: Uploadprogress(file.name)
       };
       axios.post('/images', formData, config).then(function (response) {
-        Object.assign(images.uploadPercentage = 0);
-        Object.assign(images.image = response.data);
-        _this.index++;
+        images.uploadPercentage = 0;
+        images.image = response.data;
       })["catch"](function (error) {
         if (error.response) {
-          Object.assign(images.uploadPercentage = 0);
-          Object.assign(images.err = error.response.data.errors.fileUpload[1] + file.name);
-          _this.index++;
+          images.uploadPercentage = 0;
+          images.err = error.response.data.errors.fileUpload[1] + file.name;
         }
       });
+      this.lst_img.push(images);
     },
     delete_image: function delete_image(img) {
       axios["delete"]('/images/' + img.image.name_unique);
       this.lst_img.splice(this.lst_img.indexOf(img), 1);
-      console.log(img);
-      console.log(this.images);
-      console.log(this.lst_img);
     },
     show_image: function show_image(img) {
       img.modal = true;
     }
   },
   created: function created() {
-    var _this2 = this;
+    var _this = this;
 
     axios.get('/images').then(function (response) {
       for (var index in response.data) {
@@ -1883,7 +1874,7 @@ __webpack_require__.r(__webpack_exports__);
           err: ''
         };
 
-        _this2.lst_img.push(images);
+        _this.lst_img.push(images);
       }
     });
   }
@@ -6381,7 +6372,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".dropbox {\n  outline: 2px dashed grey;\n  /* the dash box */\n  padding: 10px 10px;\n  position: relative;\n  cursor: pointer;\n}\n.input-file {\n  opacity: 0;\n  /* invisible but it's there! */\n  width: 100%;\n  height: 100%;\n  position: absolute;\n  cursor: pointer;\n}\n.dropbox:hover {\n  background: lightblue;\n  /* when mouse over to the drop zone, change color */\n}\n.dropbox p {\n  font-size: 1.2em;\n  text-align: center;\n  padding: 50px 0;\n}\ndiv.show-image {\n  position: relative;\n  float: left;\n  /*margin: 5px;*/\n  display: block;\n}\ndiv.show-image:hover img.card-img {\n  opacity: 0;\n  display: none;\n}\ndiv.show-image:hover div.card-body p {\n  display: none;\n  opacity: 0;\n}\ndiv.show-image:hover button {\n  display: block;\n  opacity: 1;\n}\ndiv.show-image button {\n  position: absolute;\n  opacity: 0;\n}\ndiv.show-image button.update {\n  top: 40%;\n  left: 12.5%;\n}\ndiv.show-image button.delete {\n  top: 40%;\n  left: 50%;\n}\ndiv.show-image button.delete_error {\n  top: 40%;\n  left: 30%;\n}", ""]);
+exports.push([module.i, ".dropbox {\n  outline: 2px dashed grey;\n  /* the dash box */\n  padding: 10px 10px;\n  position: relative;\n  cursor: pointer;\n}\n.input-file {\n  opacity: 0;\n  /* invisible but it's there! */\n  width: 100%;\n  height: 100%;\n  position: absolute;\n  cursor: pointer;\n}\n.dropbox:hover {\n  background: lightblue;\n  /* when mouse over to the drop zone, change color */\n}\n.dropbox p {\n  font-size: 1.2em;\n  text-align: center;\n  padding: 50px 0;\n}\ndiv.show-image {\n  position: relative;\n  float: left;\n  /*margin: 5px;*/\n  display: block;\n}\ndiv.show-image:hover img.card-img {\n  opacity: 0;\n  display: none;\n  transition: 1s ease;\n}\ndiv.show-image:hover div.card-body p {\n  display: none;\n  opacity: 0;\n  transition: 1s ease;\n}\ndiv.show-image:hover button {\n  display: block;\n  opacity: 1;\n  transition: 1s ease;\n}\ndiv.show-image button {\n  position: absolute;\n  opacity: 0;\n}\ndiv.show-image button.update {\n  top: 40%;\n  left: 12.5%;\n}\ndiv.show-image button.delete {\n  top: 40%;\n  left: 50%;\n}\ndiv.show-image button.delete_error {\n  top: 40%;\n  left: 30%;\n}", ""]);
 
 // exports
 
@@ -37925,7 +37916,7 @@ var render = function() {
     _c(
       "div",
       { staticClass: "row" },
-      _vm._l(_vm.lst_img, function(img, index) {
+      _vm._l(_vm.lst_img, function(img) {
         return _c(
           "div",
           { staticClass: "col-4 ", staticStyle: { "padding-bottom": "2rem" } },
@@ -37997,7 +37988,6 @@ var render = function() {
                   ? _c("img", {
                       staticClass: "card-img",
                       attrs: {
-                        id: index,
                         src: img.image.name_unique,
                         alt: "Card image",
                         height: "100%"

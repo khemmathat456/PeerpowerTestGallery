@@ -15,7 +15,7 @@
         </div>
 
         <div class="row">
-           <div class="col-4 " style="padding-bottom: 2rem" v-for="(img, index) in lst_img">
+           <div class="col-4 " style="padding-bottom: 2rem" v-for="img in lst_img">
                <div class="card d-flex border-light text-center show-image" style="border: 0px; width: 100%; height: 200px ">
 
 
@@ -25,7 +25,7 @@
 
                    <button type="button" v-if="img.image.name_unique" value="Delete" class="delete btn btn-danger delete-user" @click="delete_image(img)">Delete</button>
                    <button type="button" v-if="img.image.name_unique" value="Show" class="update btn btn-primary" @click="show_image(img)" data-toggle="modal" data-target=".image-modal-lg">show</button>
-               <img v-if="img.image.name_unique" class="card-img" :id="index" :src="img.image.name_unique" alt="Card image" height="100%">
+               <img v-if="img.image.name_unique" class="card-img" :src="img.image.name_unique" alt="Card image" height="100%">
 
                <div v-if="img.modal">
                    <div class="modal image-modal-lg" role="dialog" id="image-modal-lg" tabindex="-1" aria-labelledby="myLargeModalLabel" aria-hidden="true">
@@ -60,13 +60,11 @@
         data() {
            return {
                lst_img: [],
-               index:0,
-               files:[],
            };
         },
+
         methods: {
             checkFileType() {
-                this.files = this.$refs.myFiles.files;
                 for(let file of this.$refs.myFiles.files){
                     this.uploadfile(file);
                 }
@@ -81,12 +79,14 @@
                     modal:false,
                     err:''
                 };
-                this.lst_img.push(images)
+
 
                 const Uploadprogress = (index) => (progress) => {
-                    Object.assign(images.uploadPercentage = Math.floor((progress.loaded * 100) / progress.total))
+                    images.uploadPercentage = Math.floor((progress.loaded * 100) / progress.total)
                 };
                 let formData = new FormData();
+
+                console.log(images)
 
                 formData.append('fileUpload', file);
                 var config = {
@@ -94,30 +94,22 @@
                 };
 
                 axios.post('/images', formData, config).then((response) =>  {
-                    Object.assign(images.uploadPercentage = 0)
-                    Object.assign(images.image = response.data)
-
-
-                    this.index++
-
+                    images.uploadPercentage = 0
+                    images.image = response.data
                 })
                 .catch(error => {
                     if (error.response){
-                        Object.assign(images.uploadPercentage = 0)
-                        Object.assign(images.err = error.response.data.errors.fileUpload[1]+file.name)
-                        this.index++
+                        images.uploadPercentage = 0
+                        images.err = error.response.data.errors.fileUpload[1]+file.name
                     }
                 });
+                this.lst_img.push(images)
             },
 
 
             delete_image(img){
                 axios.delete('/images/'+img.image.name_unique);
                 this.lst_img.splice(this.lst_img.indexOf(img), 1)
-
-                console.log(img)
-                console.log(this.images)
-                console.log(this.lst_img)
             },
 
             show_image(img){
@@ -133,7 +125,6 @@
                         modal:false,
                         err:''
                     };
-
                     this.lst_img.push(images)
                 }
             });
@@ -178,14 +169,17 @@
     div.show-image:hover img.card-img {
         opacity: 0;
         display: none;
+        transition: 1s ease;
     }
     div.show-image:hover div.card-body p {
         display: none;
         opacity: 0;
+        transition: 1s ease;
     }
     div.show-image:hover button {
         display: block;
         opacity: 1;
+        transition: 1s ease;
     }
     div.show-image button {
         position: absolute;

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 
 class ImagesController extends Controller
@@ -19,7 +20,7 @@ class ImagesController extends Controller
      */
     public function index()
     {
-        $images = Images::all()->where('user_id',auth()->id());
+        $images = Images::where('user_id',auth()->id())->orderBy('created_at', 'asc')->get();
         return $images;
 
     }
@@ -42,7 +43,6 @@ class ImagesController extends Controller
      */
     public function store(imagesRequest $request)
     {
-
         $image = $request->file('fileUpload');
         $path = Storage::disk('public')->putFile('images', $image);
         $response = Images::create([
@@ -54,9 +54,7 @@ class ImagesController extends Controller
             'path' => $path,
         ]);
 
-//        dd($response);
         return $response;
-//        return basename($path);
     }
 
     /**
@@ -67,13 +65,14 @@ class ImagesController extends Controller
      */
     public function show(Images $photoModel, $id)
     {
-        $path = $photoModel::all()->where('name_unique', $id)->first()->path;
-        $storage_path = storage_path('app/public/' .$path);
-        $file = File::get($storage_path);
-        $type = File::mimeType($storage_path);
+//         Check image belong to user.
+//        if ($photoModel->user_id !== auth()->user()->id) {
+//            throw new BadRequestHttpException();
+//        }
 
-        return response($file)
-            ->header('Content-Type', $type);
+        $path = $photoModel::where('user_id',auth()->id())->where('name_unique', $id)->first()->path;
+        $file = Storage::disk('public')->get($path);
+        return $file;
     }
 
     /**
@@ -103,7 +102,7 @@ class ImagesController extends Controller
      */
     public function destroy(Images $photoModel, $id)
     {
-        $path = $photoModel::all()->where('name_unique', $id)->first()->path;
+        $path = $photoModel::where('user_id',auth()->id())->where('name_unique', $id)->first()->path;
         Storage::disk('public')->delete($path);
         $photoModel->where('name_unique', $id)->delete();
     }
